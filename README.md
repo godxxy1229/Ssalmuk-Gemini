@@ -24,7 +24,7 @@ Using Docker:
 
     docker-compose up -d
 
-Or directly:
+Or directly(venv recommended):
 
     source gemini_env/bin/activate
     uvicorn app.main:app --reload
