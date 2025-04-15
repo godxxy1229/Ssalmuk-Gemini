@@ -1,0 +1,13 @@
+#version: '3'
+
+services:
+  gemini-api-proxy:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEYS=${GOOGLE_API_KEYS}
+    volumes:
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
