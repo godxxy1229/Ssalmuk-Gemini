@@ -26,6 +26,7 @@ Using Docker:
 
 Or directly:
 
+    source gemini_env/bin/activate
     uvicorn app.main:app --reload
 
 Access the API documentation:
