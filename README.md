@@ -7,8 +7,16 @@ This solution speeds up processing time based on the number of free plan API key
 
 The idea is simple: it always picks the API key with the most available quota, and if a key hits its RPM (Requests Per Minute) limit, it automatically switches to another. It also supports multiple concurrent requests (`max_concurrent` setting), and each request runs in its own thread.
 
-For example, with 4 API keys, you can handle around **60 RPM** — roughly **1 request per second**.  
-With 10 keys, that goes up to **150 RPM**, or about **2.5 requests per second**.
+> The following table shows how many requests per minute (RPM) and requests per second (RPS) you can achieve depending on the number of API keys when using **Gemini 2.0 Flash model**.
+> *As of April 2025, Gemini 2.0 Flash supports 15 RPM per key.*
+
+| Number of API Keys | Total RPM (Requests/Minute) | RPS (Requests/Second) |
+| ------------------ | --------------------------- | --------------------- |
+| 1                  | 15                          | 0.25                  |
+| 4                  | 60                          | 1.00                  |
+| 10                 | 150                         | 2.50                  |
+| 20                 | 300                         | 5.00                  |
+| 100                | 1500                        | 25.00                 |
 
 ---
 
