@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 import secrets
 import string
@@ -8,9 +8,12 @@ import string
 from app.database import get_db
 from app.models import ApiKey, UsageLog
 from app.api_key_manager import generate_secure_key
+from app.client import gemini_client # Added
+from app.queue_manager import queue_manager # Added
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# Pydantic Models
 class ApiKeyResponse(BaseModel):
     id: int
     key: str
@@ -24,6 +27,11 @@ class ApiKeyCreate(BaseModel):
 class ApiKeyStatusUpdate(BaseModel):
     active: bool
 
+class ProxyStatsResponse(BaseModel):
+    gemini_client_stats: Dict[str, int]
+    queue_manager_stats: Dict[str, Any]
+
+# Endpoints
 @router.get("/keys", response_model=List[ApiKeyResponse])
 async def list_api_keys(
     skip: int = 0, 
@@ -128,3 +136,15 @@ async def get_usage_logs(
     logs = query.order_by(UsageLog.timestamp.desc()).offset(skip).limit(limit).all()
     
     return logs
+
+@router.get("/proxy-stats", response_model=ProxyStatsResponse)
+async def get_proxy_statistics(db: Session = Depends(get_db)): # Added db dependency for potential future auth
+    # In a real scenario, this endpoint should be protected by admin authentication
+    
+    client_stats = gemini_client.get_internal_stats()
+    q_stats = queue_manager.get_queue_stats()
+    
+    return ProxyStatsResponse(
+        gemini_client_stats=client_stats,
+        queue_manager_stats=q_stats
+    )
