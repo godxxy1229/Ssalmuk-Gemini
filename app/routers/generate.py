@@ -54,22 +54,57 @@ async def generate_content(
                 if isinstance(item, str):
                     # For text items, add directly
                     processed_contents.append(item)
-                elif isinstance(item, dict) and "file_id" in item:
-                    # For file references, load the file
-                    file_id = item["file_id"]
-                    file_path = file_storage.get_file_path(file_id, db)
-                    
-                    if not file_path:
-                        raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
-                    
-                    try:
-                        # Add file part using the confirmed working method
-                        file_part = gemini_client.load_file_to_part(file_path)
-                        processed_contents.append(file_part)
-                        logging.info(f"Successfully loaded file: {file_id}, type: {type(file_part)}")
-                    except Exception as e:
-                        logging.error(f"Failed to process file {file_id}: {str(e)}", exc_info=True)
-                        raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
+                elif isinstance(item, dict):
+                    if "file_id" in item:
+                        # For file references, load the file
+                        file_id = item["file_id"]
+                        file_path = file_storage.get_file_path(file_id, db)
+                        
+                        if not file_path:
+                            raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
+                        
+                        try:
+                            # Add file part using the confirmed working method
+                            file_part = gemini_client.load_file_to_part(file_path)
+                            processed_contents.append(file_part)
+                            logging.info(f"Successfully loaded file: {file_id}, type: {type(file_part)}")
+                        except Exception as e:
+                            logging.error(f"Failed to process file {file_id}: {str(e)}", exc_info=True)
+                            raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
+                    elif "parts" in item:
+                        # Handle Gemini API standard format with parts
+                        parts = item["parts"]
+                        for part in parts:
+                            if isinstance(part, dict):
+                                if "text" in part:
+                                    processed_contents.append(part["text"])
+                                elif "inline_data" in part:
+                                    # Handle inline base64 image data
+                                    inline_data = part["inline_data"]
+                                    mime_type = inline_data.get("mimeType", "application/octet-stream")
+                                    data = inline_data.get("data", "")
+                                    
+                                    try:
+                                        # Decode base64 data
+                                        import base64
+                                        image_bytes = base64.b64decode(data)
+                                        
+                                        # Create Part from bytes
+                                        image_part = types.Part.from_bytes(mime_type=mime_type, data=image_bytes)
+                                        processed_contents.append(image_part)
+                                        logging.info(f"Successfully processed inline image: {mime_type}, size: {len(image_bytes)} bytes")
+                                    except Exception as e:
+                                        logging.error(f"Failed to process inline image data: {str(e)}", exc_info=True)
+                                        raise HTTPException(status_code=500, detail=f"Failed to process inline image: {str(e)}")
+                            else:
+                                # If part is not a dict, add as-is (might be a pre-processed Part)
+                                processed_contents.append(part)
+                    else:
+                        # Unknown dict format, add as-is and let Gemini handle it
+                        processed_contents.append(item)
+                else:
+                    # Not string or dict, add as-is (might be a pre-processed Part)
+                    processed_contents.append(item)
         else:
             raise HTTPException(status_code=400, detail="Invalid contents format")
         
