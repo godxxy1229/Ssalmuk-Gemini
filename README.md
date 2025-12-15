@@ -11,13 +11,13 @@ The idea is simple: it always picks the API key with the most available quota, a
 > 
 > *As of April 2025, each API key supports 15 RPM and 1500 requests per day.*
 
-| Number of API Keys | Total RPM (per minute) | RPS (per second) | Daily Limit (requests/day) |
-| ------------------ | ---------------------- | ---------------- | -------------------------- |
-| 1                  | 15                     | 0.25             | 200                        |
-| 4                  | 60                     | 1.00             | 800                        |
-| 10                 | 150                    | 2.50             | 2,000                      |
-| 20                 | 300                    | 5.00             | 4,000                      |
-| 100                | 1500                   | 25.00            | 20,000                     |
+| Number of API Keys | Total RPM (per minute) | RPS (per second) | Total TPM (per minute) | Daily Limit (RPD) |
+| ------------------ | ---------------------- | ---------------- | ---------------------- | ----------------- |
+| 1                  | 5                      | 0.08             | 250K                   | 20                |
+| 4                  | 20                     | 0.33             | 1,000K (1.0M)          | 80                |
+| 10                 | 50                     | 0.83             | 2,500K (2.5M)          | 200               |
+| 20                 | 100                    | 1.67             | 5,000K (5.0M)          | 400               |
+| 100                | 500                    | 8.33             | 25,000K (25M)          | 2,000             |
 
 ---
 
